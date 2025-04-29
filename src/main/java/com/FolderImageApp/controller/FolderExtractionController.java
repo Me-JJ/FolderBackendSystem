@@ -4,6 +4,7 @@ import com.FolderImageApp.dto.CustomMetaData;
 import com.FolderImageApp.dto.MetaData;
 import com.FolderImageApp.services.FolderExtractionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class FolderExtractionController
@@ -41,6 +43,12 @@ public class FolderExtractionController
         return folderExtractionService.getMetaFileWithinDate(fileLoc,page,size,startDate,endDate);
     }
 
+    @GetMapping("/delete")
+    public Boolean getMetaFileWithinDate(@RequestParam String fileLoc)
+    {
+        log.info("DELETE {}",fileLoc);
+        return folderExtractionService.deleteFile(fileLoc);
+    }
 
 
 }

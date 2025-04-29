@@ -107,7 +107,6 @@ public class FolderExtractionService {
     public CustomMetaData getMetaFileWithinDate(String fileLoc, Integer page, Integer size, Long startDate, Long endDate)
     {
 
-        log.info("getMetaDataWithin Date {} & {} from Loc {}",LocalDateTime.ofEpochSecond(startDate,0,ZoneOffset.UTC),LocalDateTime.ofEpochSecond(endDate,0,ZoneOffset.UTC),fileLoc);
         log.info("getMetaDataWithin Date {} & {} from Loc {}",startDate,endDate,fileLoc);
         File directory = new File(fileLoc);
         List<MetaData> metaDataList = new ArrayList<>();
@@ -163,6 +162,19 @@ public class FolderExtractionService {
                     }
                 }
             }
+        }
+    }
+
+    public Boolean deleteFile(String fileLoc)
+    {
+        File file = new File(fileLoc);
+        if (file.delete()) {
+            log.info("File deleted successfully");
+            return true;
+        }
+        else {
+            log.info("Failed to delete the file");
+            return false;
         }
     }
 }
