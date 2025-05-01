@@ -2,6 +2,7 @@ package com.FolderImageApp.services;
 
 import com.FolderImageApp.dto.CustomMetaData;
 import com.FolderImageApp.dto.MetaData;
+import com.FolderImageApp.exception.ResourseNotFound;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +50,7 @@ public class FolderExtractionService {
       return new CustomMetaData(data,metaDataList.size());
     }
 
-    private void traverseFilesUnfilterd(File folder,List<MetaData> metaDataList) {
+    private void traverseFilesUnfilterd(File folder,List<MetaData> metaDataList) throws Exception {
         if (folder.isDirectory()) {
             File[] files = folder.listFiles();
             if (files != null) {
@@ -69,8 +70,9 @@ public class FolderExtractionService {
                                     MetaData metaData = new MetaData(path, localDateTime);
                                     metaDataList.add(metaData);
                             }
-                        } catch (Exception ex) {
-                            System.out.println(ex.getMessage());
+                        } catch (Exception ex)
+                        {
+                            throw new ResourseNotFound("Something went wrong!"+ex.getMessage());
                         }
                     }
                 }
@@ -125,7 +127,7 @@ public class FolderExtractionService {
         return new CustomMetaData(data,metaDataList.size());
     }
 
-    private void traverseFilesFilterd(File folder,List<MetaData> metaDataList,Long startDate,Long endDate) {
+    private void traverseFilesFilterd(File folder,List<MetaData> metaDataList,Long startDate,Long endDate) throws Exception {
         if (folder.isDirectory()) {
             File[] files = folder.listFiles();
             if (files != null) {
@@ -157,7 +159,7 @@ public class FolderExtractionService {
 //                                long timeInMillis =creationTime.toInstant().toEpochMilli();
                             }
                         } catch (Exception ex) {
-                            System.out.println(ex.getMessage());
+                            throw new Exception("Something went wrong! "+ex.getMessage());
                         }
                     }
                 }
@@ -167,14 +169,17 @@ public class FolderExtractionService {
 
     public Boolean deleteFile(String fileLoc)
     {
-        File file = new File(fileLoc);
-        if (file.delete()) {
-            log.info("File deleted successfully");
-            return true;
-        }
-        else {
-            log.info("Failed to delete the file");
-            return false;
+        try {
+            File file = new File(fileLoc);
+            if (file.delete()) {
+                log.info("File deleted successfully");
+                return true;
+            } else {
+                log.info("Failed to delete the file");
+                return false;
+            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Can't Delete the file! "+e.getMessage());
         }
     }
 }
