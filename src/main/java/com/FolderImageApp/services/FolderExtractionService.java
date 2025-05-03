@@ -4,15 +4,21 @@ import com.FolderImageApp.dto.CustomMetaData;
 import com.FolderImageApp.dto.MetaData;
 import com.FolderImageApp.exception.ResourseNotFound;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -167,8 +173,7 @@ public class FolderExtractionService {
         }
     }
 
-    public Boolean deleteFile(String fileLoc)
-    {
+    public Boolean deleteFile(String fileLoc) throws Exception {
         try {
             File file = new File(fileLoc);
             if (file.delete()) {
@@ -178,8 +183,62 @@ public class FolderExtractionService {
                 log.info("Failed to delete the file");
                 return false;
             }
+        } catch (Exception e) {
+            throw new Exception("Can't Delete the file! "+e.getMessage());
+        }
+    }
+
+    public boolean downloadImage(String fileLoc) throws IOException {
+        try {
+            File file = new File(fileLoc);
+            String parentDir = fileLoc.split("/public")[0];
+            LocalDate today = LocalDate.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String formattedDate = today.format(formatter);
+
+            String downloadsDir = parentDir+File.separator+"downloads";
+            File dirFile = new File(downloadsDir);
+            if(!dirFile.exists())
+            {
+                if(dirFile.mkdir())
+                {
+                    log.info("Download Directory is created! - {}", dirFile.getName());
+                }
+                else
+                {
+                    throw new IOException("Failed to create Download Folder");
+                }
+            }
+            String saveFilePath = parentDir+File.separator+"downloads"+File.separator+formattedDate;
+            String imageFile = parentDir+File.separator+"downloads"+File.separator+formattedDate+File.separator+fileLoc.split("/public/")[1];
+
+            File saveFile = new File(saveFilePath);
+
+            Path source = Paths.get(fileLoc);
+            Path target = Paths.get(imageFile);
+            try {
+                if (!saveFile.exists()) {
+                    if (saveFile.mkdir()) {
+                        log.info("Directory is created! - {}", saveFile.getAbsoluteFile());
+                        log.info("Src File {}, Destination File {}", fileLoc, imageFile);
+                        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+                        return true;
+                    } else {
+                        log.error("Failed to create directory!");
+                        throw new IOException("Failed to create Today's Date Folder");
+                    }
+                } else {
+                    log.warn("Directory already exists!{}", saveFile.getName());
+                    log.info("Src File -> {}, Destination File -> {}", fileLoc, imageFile);
+                    Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+                    return true;
+                }
+            } catch (IOException e) {
+                throw new IOException("Error Downloading the File"+e.getMessage());
+            }
+
         } catch (RuntimeException e) {
-            throw new RuntimeException("Can't Delete the file! "+e.getMessage());
+            throw new RuntimeException("Can't Download the file! "+e.getMessage());
         }
     }
 }

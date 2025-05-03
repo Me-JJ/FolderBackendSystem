@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,10 +23,6 @@ public class GlobalExceptionHandler
         ae.setStatus(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(new ApiResponse<>(ae),ae.getStatus());
     }
-
-
-
-
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<?>> handleIllegalArgumentError(IllegalArgumentException exc)
     {
@@ -34,6 +31,25 @@ public class GlobalExceptionHandler
     ae.setMessage("Invalid Path\n"+exc.getLocalizedMessage());
 
         return new ResponseEntity<>(new ApiResponse<>(ae),HttpStatus.BAD_REQUEST);
+
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse<?>> handleRuntimeExp(RuntimeException exc)
+    {
+        ApiError ae=new ApiError();
+        ae.setStatus(HttpStatus.BAD_REQUEST);
+        ae.setMessage(exc.getLocalizedMessage());
+        return new ResponseEntity<>(new ApiResponse<>(ae),ae.getStatus());
+
+    }
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<ApiResponse<?>> handleIOException(IOException exc)
+    {
+        ApiError ae=new ApiError();
+        ae.setStatus(HttpStatus.BAD_REQUEST);
+        ae.setMessage("File path not valid "+exc.getLocalizedMessage());
+        return new ResponseEntity<>(new ApiResponse<>(ae),ae.getStatus());
 
     }
     @ExceptionHandler(Exception.class)
